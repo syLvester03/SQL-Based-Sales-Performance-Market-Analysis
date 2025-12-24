@@ -29,17 +29,25 @@ SELECT COUNT(*)
 FROM transactions
 WHERE sales_amount <= 0;
 -- 1611 transactions with 0 or less than 0 amount
-
 SELECT COUNT(*) FROM sales.transactions;
 -- 150283 records where 1611 are empty records. 
+SELECT SUM(sales_qty) 
+FROM transactions
+WHERE sales_amount <=0; 
+-- 12781 products sold where sale amount is less than or equal to 0
+SELECT SUM(sales_qty)
+FROM transactions
+WHERE !(sales_amount <=0); 
+-- 2431634 products have proper sale amount
+-- It is hardly over 0.5% of products sold with record. So, we can avoid using these
 -- This will not have much impact on the analysis.
 -- Create a view to avoid using the empty records.
 
 -- There are some record which have USD as currency 
 SELECT * FROM transactions WHERE currency = 'USD';
 SELECT DISTINCT currency FROM transactions;
--- INR and USD seems to appear twice for some reason
--- Convert not INR currency to INR then overwrite the INR(with escape seq probably) as INR
+-- INR and USD appear twice.(there is an escape sequence in currency name) 
+-- Convert USD to INR then overwrite the INR(with escape seq) as INR
 
 CREATE VIEW transactions_clean AS
 SELECT product_code,
@@ -59,6 +67,9 @@ FROM
     transactions
 WHERE 
     sales_amount > 0;
+-- Fixed USD to INR conversion rate used for analysis simplicity
+-- Exchange rate = 1 USD = 89 INR
+
 
 SELECT * FROM markets_clean ORDER BY markets_name;
 -- Bhopal appears to have a duplicate with different market_code (007, 013)
